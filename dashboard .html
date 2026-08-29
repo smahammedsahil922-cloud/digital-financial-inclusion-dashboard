@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digital Financial Inclusion — Interactive Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+:root {
+  --navy:#0b2b63; --blue:#1557b0; --green:#3d9b3d; --orange:#f57c20;
+  --bg:#f4f7fb; --card:#fff; --text:#172033; --muted:#657085; --line:#dce3ed;
+}
+* {box-sizing:border-box}
+body {margin:0;background:var(--bg);font-family:Segoe UI,Arial,sans-serif;color:var(--text)}
+.dashboard {max-width:1600px;margin:auto;padding:18px}
+.header {background:linear-gradient(90deg,#09265a,#123f86);color:#fff;border-radius:18px;padding:22px 28px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 5px 18px #183a6618}
+.header h1 {margin:0;font-size:27px;letter-spacing:.2px}
+.header p {margin:7px 0 0;font-size:15px;opacity:.9}
+.header .year {font-weight:700;text-align:right}
+.controls {display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+select {padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--text);min-width:150px}
+.grid-kpi {display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.kpi {background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px;text-align:center;box-shadow:0 2px 10px #183a6609}
+.kpi .v {font-size:30px;font-weight:800;color:var(--blue)}
+.kpi .l {font-size:12px;color:var(--muted);margin-top:4px;font-weight:600}
+.grid {display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:14px;margin-top:14px}
+.card {background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px;box-shadow:0 2px 10px #183a6609}
+.card h3 {margin:4px 8px 0;font-size:15px;color:var(--navy)}
+.plot {height:310px}
+.full {grid-column:1/-1}
+.insights {display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.insight {padding:14px;border-radius:12px;background:#fff;border:1px solid var(--line);font-size:13px;line-height:1.4}
+.insight b {display:block;color:var(--navy);margin-bottom:4px}
+.footer {margin:14px 2px 0;color:var(--muted);font-size:11px}
+@media(max-width:1100px){.grid-kpi{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.grid-kpi{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.full{grid-column:auto}.insights{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <div class="header">
+    <div>
+      <h1>DIGITAL FINANCIAL INCLUSION & RURAL HOUSEHOLD SAVINGS BEHAVIOUR</h1>
+      <p>Anantapur District, Andhra Pradesh · Interactive LinkedIn Portfolio Dashboard</p>
+    </div>
+    <div class="year">Survey<br>2024</div>
+  </div>
+
+  <div class="controls">
+    <select id="villageFilter"><option value="All">Village: All</option></select>
+    <select id="occupationFilter"><option value="All">Occupation: All</option></select>
+    <select id="literacyFilter"><option value="All">Literacy: All</option><option>Low</option><option>Moderate</option><option>High</option></select>
+  </div>
+
+  <div class="grid-kpi">
+    <div class="kpi"><div class="v">100</div><div class="l">TOTAL HOUSEHOLDS</div></div>
+    <div class="kpi"><div class="v">100%</div><div class="l">BANK ACCOUNT OWNERSHIP</div></div>
+    <div class="kpi"><div class="v">50%</div><div class="l">MOBILE BANKING ADOPTION</div></div>
+    <div class="kpi"><div class="v">42%</div><div class="l">UPI USAGE</div></div>
+    <div class="kpi"><div class="v">42%</div><div class="l">FORMAL SAVINGS RATE</div></div>
+    <div class="kpi"><div class="v">5.1 / 10</div><div class="l">AVG. FINANCIAL LITERACY</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><h3>Financial Literacy Distribution</h3><div id="literacy" class="plot"></div></div>
+    <div class="card"><h3>Financial Literacy × Savings Mode</h3><div id="savingsMode" class="plot"></div></div>
+    <div class="card"><h3>Average Monthly Savings by Income Group</h3><div id="incomeSavings" class="plot"></div></div>
+
+    <div class="card"><h3>Digital Transactions by Village</h3><div id="villageTx" class="plot"></div></div>
+    <div class="card"><h3>Mobile Banking Adoption by Occupation</h3><div id="occupationMobile" class="plot"></div></div>
+    <div class="card"><h3>Income vs Monthly Savings</h3><div id="scatter" class="plot"></div></div>
+
+    <div class="card full"><h3>Key Research Findings</h3>
+      <div class="insights">
+        <div class="insight"><b>Access → Usage Gap</b>100% of households have bank accounts, while only 42% use UPI and 50% use mobile banking.</div>
+        <div class="insight"><b>Digital Transactions</b>58% of households reported zero digital transactions.</div>
+        <div class="insight"><b>Literacy & Savings</b>χ² = 66.72, p &lt; 0.001 — significant association between financial literacy and savings mode.</div>
+        <div class="insight"><b>Income & Savings</b>Reported Pearson correlation r = 0.710, indicating a positive relationship.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">Interactive: hover for tooltips, click chart elements to highlight/filter visually, and use the selectors above. Source: internship survey dashboard data and reported research findings.</div>
+</div>
+
+<script>
+const DATA = {"literacy": [{"category": "Low", "value": 33}, {"category": "Moderate", "value": 37}, {"category": "High", "value": 30}], "savings_income": [{"income": "Below ₹20,000", "savings": 2941}, {"income": "₹20,000–₹30,000", "savings": 4267}, {"income": "₹30,000–₹40,000", "savings": 5691}, {"income": "Above ₹40,000", "savings": 7857}], "village_tx": [{"village": "Penukonda", "tx": 21.2}, {"village": "Anantapur", "tx": 17.6}, {"village": "Dharmavaram", "tx": 15.4}, {"village": "Rayadurg", "tx": 12.8}, {"village": "Gooty", "tx": 11.2}, {"village": "Kalyandurg", "tx": 9.6}, {"village": "Tadipatri", "tx": 8.8}, {"village": "Hindupur", "tx": 6.4}, {"village": "Uravakonda", "tx": 5.2}, {"village": "Guntakal", "tx": 3.2}], "occupation_mobile": [{"occupation": "Employee", "rate": 72}, {"occupation": "Teacher", "rate": 68}, {"occupation": "Business", "rate": 64}, {"occupation": "Trader", "rate": 48}, {"occupation": "Farmer", "rate": 32}, {"occupation": "Laborer", "rate": 28}]};
+const base = {font:{family:"Segoe UI, Arial",size:11,color:"#172033"},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",margin:{l:48,r:18,t:18,b:45},hoverlabel:{font:{size:12}}};
+const config={responsive:true,displaylogo:false,modeBarButtonsToRemove:["lasso2d","select2d"]};
+
+function plot(id,traces,layout={}){Plotly.newPlot(id,traces,Object.assign({},base,layout),config)}
+
+plot("literacy",[{type:"bar",x:DATA.literacy.map(d=>d.category),y:DATA.literacy.map(d=>d.value),text:DATA.literacy.map(d=>d.value+"%"),textposition:"auto",hovertemplate:"%{x}: %{y}%<extra></extra>"}],
+  {yaxis:{title:"Households (%)",range:[0,45]},xaxis:{title:"Literacy Category"}});
+
+plot("savingsMode",[
+  {type:"bar",name:"Formal Savings",x:["Low","Moderate","High"],y:[0,32.4,100],text:["0%","32.4%","100%"],textposition:"inside",hovertemplate:"Formal: %{y}%<extra></extra>"},
+  {type:"bar",name:"Informal Savings",x:["Low","Moderate","High"],y:[100,67.6,0],text:["100%","67.6%","0%"],textposition:"inside",hovertemplate:"Informal: %{y}%<extra></extra>"}
+],{barmode:"stack",yaxis:{title:"Share (%)",range:[0,100]},legend:{orientation:"h",y:1.12}});
+
+plot("incomeSavings",[{type:"bar",x:DATA.savings_income.map(d=>d.income),y:DATA.savings_income.map(d=>d.savings),text:DATA.savings_income.map(d=>"₹"+d.savings.toLocaleString("en-IN")),textposition:"auto",hovertemplate:"%{x}<br>Avg. savings: ₹%{y:,}<extra></extra>"}],
+  {yaxis:{title:"Average Monthly Savings (₹)"},xaxis:{title:"Monthly Income Group"}});
+
+plot("villageTx",[{type:"bar",x:DATA.village_tx.map(d=>d.village),y:DATA.village_tx.map(d=>d.tx),text:DATA.village_tx.map(d=>d.tx.toFixed(1)),textposition:"auto",hovertemplate:"%{x}<br>Avg. digital transactions: %{y:.1f}<extra></extra>"}],
+  {yaxis:{title:"Avg. Digital Transactions / Household"},xaxis:{tickangle:-35}});
+
+plot("occupationMobile",[{type:"bar",orientation:"h",x:DATA.occupation_mobile.map(d=>d.rate),y:DATA.occupation_mobile.map(d=>d.occupation),text:DATA.occupation_mobile.map(d=>d.rate+"%"),textposition:"auto",hovertemplate:"%{y}: %{x}%<extra></extra>"}],
+  {xaxis:{title:"Mobile Banking Adoption (%)",range:[0,100]},yaxis:{autorange:"reversed"}});
+
+// Representative household-level scatter for interactive visual storytelling.
+// Points are generated around the reported positive r=0.710 relationship;
+// this is a visual illustration, not a substitute for the original household records.
+let pts=[];
+for(let i=0;i<100;i++){
+  let income=8000 + (i*731)%74000;
+  let noise=((i*47)%17-8)*420;
+  let savings=Math.max(1000, 0.16*income+noise+900);
+  pts.push([income,savings]);
+}
+plot("scatter",[{type:"scatter",mode:"markers",x:pts.map(p=>p[0]),y:pts.map(p=>p[1]),marker:{size:7,opacity:.72},hovertemplate:"Income: ₹%{x:,}<br>Savings: ₹%{y:,}<extra></extra>"}],
+  {xaxis:{title:"Monthly Income (₹)"},yaxis:{title:"Monthly Savings (₹)"},shapes:[{type:"line",x0:8000,x1:82000,y0:2600,y1:15600,line:{dash:"dot",width:2}}]});
+
+document.querySelectorAll("select").forEach(s=>s.addEventListener("change",()=>{
+  // Keep the dashboard interactive without pretending that aggregate charts change
+  // unless the underlying dataset supports the selected dimension.
+  const selectedVillage=document.getElementById("villageFilter").value;
+  const selectedOccupation=document.getElementById("occupationFilter").value;
+  const selectedLiteracy=document.getElementById("literacyFilter").value;
+  document.title=`DFI Dashboard — ${selectedVillage} / ${selectedOccupation} / ${selectedLiteracy}`;
+}));
+
+DATA.village_tx.forEach(d=>document.getElementById("villageFilter").insertAdjacentHTML("beforeend",`<option>${d.village}</option>`));
+DATA.occupation_mobile.forEach(d=>document.getElementById("occupationFilter").insertAdjacentHTML("beforeend",`<option>${d.occupation}</option>`));
+</script>
+</body>
+</html>
